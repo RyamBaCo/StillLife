@@ -33,6 +33,7 @@ namespace StillebenBrowser
         float speedLeftRight = .3f;
 
         bool fingersConnected = true;
+        string lastFileName = "";
 
         SizeF loadedTexturePosition = new SizeF(-1, -1);
         SizeF currentTexturePosition = SizeF.Empty;
@@ -83,6 +84,10 @@ namespace StillebenBrowser
 			}
 			else
 			{
+                if (file == lastFileName)
+                    return;
+
+                lastFileName = file;
                 pictureBoxImage.Image = Image.FromFile(file);
                 int scaledWidth = Convert.ToInt32((float)pictureBoxImage.Image.Height / Height * Width);
                 pictureBoxImage.Location = new Point((Width - scaledWidth) / 2, 0);

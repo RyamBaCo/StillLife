@@ -52,17 +52,17 @@
     <Compile Include="Config\ConfigFile.cs" />
     <Compile Include="Config\Setting.cs" />
     <Compile Include="Config\SettingsGroup.cs" />
-    <Compile Include="Stilleben.cs">
+    <Compile Include="StillLife.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Stilleben.Designer.cs">
-      <DependentUpon>Stilleben.cs</DependentUpon>
+    <Compile Include="StillLife.Designer.cs">
+      <DependentUpon>StillLife.cs</DependentUpon>
     </Compile>
     <Compile Include="LeapListener.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Stilleben.resx">
-      <DependentUpon>Stilleben.cs</DependentUpon>
+    <EmbeddedResource Include="StillLife.resx">
+      <DependentUpon>StillLife.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
