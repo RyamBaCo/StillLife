@@ -8,8 +8,8 @@
     <ProjectGuid>{66EBE3CB-1D66-49A6-926C-EFF477A7A589}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>StillebenBrowser</RootNamespace>
-    <AssemblyName>StillebenBrowser</AssemblyName>
+    <RootNamespace>StillLife</RootNamespace>
+    <AssemblyName>StillLife</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -72,6 +72,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

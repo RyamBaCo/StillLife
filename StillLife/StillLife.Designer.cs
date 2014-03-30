@@ -1,4 +1,4 @@
-﻿namespace StillebenBrowser
+﻿namespace StillLife
 {
     partial class StillLife
     {
