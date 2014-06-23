@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using System.Threading;
 using EasyConfig;
 using Leap;
+using System.IO;
 
 namespace StillLife
 {
@@ -22,8 +23,8 @@ namespace StillLife
 
         Object lockMoveValues = new Object();
 
-        const int NumberOfRows = 25;
-        const int NumberOfColumns = 70;
+        int NumberOfRows = 25;
+        int NumberOfColumns = 70;
 
         const float TextureWidth = 1000.0f;
         const float TextureHeight = 833.0f;
@@ -37,7 +38,7 @@ namespace StillLife
         SizeF loadedTexturePosition = new SizeF(-1, -1);
         SizeF currentTexturePosition = SizeF.Empty;
         SizeF startTexturePosition = SizeF.Empty;
-        SizeF idleTexturePosition = new SizeF(NumberOfRows / 2, NumberOfColumns / 2);
+        SizeF idleTexturePosition = SizeF.Empty;
 
         DateTime lastTime;
         double passedIdleTime = 0;
@@ -56,7 +57,7 @@ namespace StillLife
             idleTexturePosition.Height = config.SettingGroups["Idle"].Settings["IdleY"].GetValueAsInt();
             timeTillIdle = config.SettingGroups["Idle"].Settings["IdleAfter"].GetValueAsFloat();
             idleSpeed = config.SettingGroups["Idle"].Settings["IdleSpeed"].GetValueAsFloat();
-
+            
             leapController = new Controller();
             leapListener = new LeapListener();
             leapController.AddListener(leapListener);
@@ -64,6 +65,8 @@ namespace StillLife
             leapListener.LeapRegisterFingers += new LeapListener.RegisterFingers(OnRegisterFingers);
 
             lastTime = DateTime.Now;
+
+            CalculateColumnsRows();
 
             updateThread = new Thread(UpdateThread);
             updateThread.Start();
@@ -99,6 +102,28 @@ namespace StillLife
 
                 SetImage(@"images\" + currentRow + "_" + currentColumn + ".jpg");
             }
+        }
+
+        private void CalculateColumnsRows()
+        {
+            string[] files = Directory.GetFiles("images").Select(path => Path.GetFileNameWithoutExtension(path)).ToArray();
+            NumberOfRows = 0;
+            NumberOfColumns = 0;
+            
+            foreach (string fileName in files)
+            {
+                string[] numbers = fileName.Split('_');
+                int row = Convert.ToInt32(numbers[0]);
+                int column = Convert.ToInt32(numbers[1]);
+
+                if (row > NumberOfRows)
+                    NumberOfRows = row;
+                if (column > NumberOfColumns)
+                    NumberOfColumns = column;
+            }
+
+            ++NumberOfColumns;
+            ++NumberOfRows;
         }
 
         private void SetImage(string file)
