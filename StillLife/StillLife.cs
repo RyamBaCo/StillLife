@@ -10,6 +10,7 @@ using System.Threading;
 using EasyConfig;
 using Leap;
 using System.IO;
+using System.Diagnostics;
 
 namespace StillLife
 {
@@ -40,7 +41,7 @@ namespace StillLife
         SizeF startTexturePosition = SizeF.Empty;
         SizeF idleTexturePosition = SizeF.Empty;
 
-        DateTime lastTime;
+        Stopwatch stopWatch = new Stopwatch();
         double passedIdleTime = 0;
         double timeTillIdle = 5;
         double idleSpeed = 4;
@@ -64,20 +65,27 @@ namespace StillLife
             leapListener.LeapSwipe += new LeapListener.SwipeEvent(OnSwipe);
             leapListener.LeapRegisterFingers += new LeapListener.RegisterFingers(OnRegisterFingers);
 
-            lastTime = DateTime.Now;
-
             CalculateColumnsRows();
+            InitializeIdleValues();
 
+            stopWatch.Start();
             updateThread = new Thread(UpdateThread);
             updateThread.Start();
+        }
+
+        protected override bool ProcessCmdKey(ref Message message, Keys keyData)
+        {
+            if (keyData == Keys.Escape)
+                Application.Exit();
+            return base.ProcessCmdKey(ref message, keyData);
         }
 
         public void UpdateThread()
         {
             while (true)
             {
-                double deltaTime = (DateTime.Now - lastTime).TotalSeconds;
-                lastTime = DateTime.Now;
+                double deltaTime = stopWatch.Elapsed.TotalSeconds;
+                stopWatch.Restart();
 
                 int currentRow;
                 int currentColumn;
@@ -86,7 +94,8 @@ namespace StillLife
                 {
                     if (!fingersConnected && startTexturePosition != idleTexturePosition)
                     {
-                        passedIdleTime += deltaTime;
+                        if (passedIdleTime < finalIdleTime + timeTillIdle)
+                            passedIdleTime += deltaTime;
 
                         if (passedIdleTime > timeTillIdle)
                         {
@@ -96,11 +105,21 @@ namespace StillLife
                         }
                     }
 
-                    currentRow = Math.Min(NumberOfRows - 1, Convert.ToInt32(currentTexturePosition.Width));
-                    currentColumn = Math.Min(NumberOfColumns - 1, Convert.ToInt32(currentTexturePosition.Height));
+                    float textureWidth = currentTexturePosition.Width;
+                    if (textureWidth < int.MinValue || textureWidth > int.MaxValue)
+                        continue;
+                    float textureHeight = currentTexturePosition.Height;
+                    if (textureHeight < int.MinValue || textureHeight > int.MaxValue)
+                        continue;
+
+                    currentRow = Math.Min(NumberOfRows - 1, Convert.ToInt32(textureWidth));
+                    currentColumn = Math.Min(NumberOfColumns - 1, Convert.ToInt32(textureHeight));
                 }
 
-                SetImage(@"images\" + currentRow + "_" + currentColumn + ".jpg");
+                string file = @"images\" + currentRow + "_" + currentColumn + ".jpg";
+                if (file != lastFileName)
+                    SetImage(file);
+                lastFileName = file;
             }
         }
 
@@ -135,15 +154,12 @@ namespace StillLife
 			}
 			else
 			{
-                if (file == lastFileName)
-                    return;
-
-                lastFileName = file;
                 pictureBoxImage.Image = Image.FromFile(file);
-                int scaledWidth = Convert.ToInt32((float)pictureBoxImage.Image.Height / Height * Width);
+//                int scaledWidth = Convert.ToInt32(Height / (float)pictureBoxImage.Image.Height * Width);
+                int scaledWidth = Convert.ToInt32(pictureBoxImage.Image.Width * Height / (float)pictureBoxImage.Image.Height);
                 pictureBoxImage.Location = new Point((Width - scaledWidth) / 2, 0);
-                pictureBoxImage.Size = new Size(scaledWidth, Height);
-			}
+                pictureBoxImage.Size = new Size(scaledWidth, Height);              
+  			}
 		}
 
         private void OnRegisterFingers(bool connected)
@@ -153,13 +169,16 @@ namespace StillLife
                 fingersConnected = connected;
 
                 if (!fingersConnected)
-                {
-                    startTexturePosition = currentTexturePosition;
-                    passedIdleTime = 0;
-                    SizeF difference = startTexturePosition - idleTexturePosition;
-                    finalIdleTime = Math.Sqrt(difference.Width * difference.Width + difference.Height * difference.Height) / idleSpeed;
-                }
+                    InitializeIdleValues();
             }
+        }
+
+        private void InitializeIdleValues()
+        {
+            startTexturePosition = currentTexturePosition;
+            passedIdleTime = 0;
+            SizeF difference = startTexturePosition - idleTexturePosition;
+            finalIdleTime = Math.Sqrt(difference.Width * difference.Width + difference.Height * difference.Height) / idleSpeed;
         }
 
         private void OnSwipe(SwipeDirection swipeDirection)
@@ -195,6 +214,7 @@ namespace StillLife
         private void Stilleben_FormClosing(object sender, FormClosingEventArgs e)
         {
             updateThread.Abort();
+            leapController.RemoveListener(leapListener);
         }
     }
 }
